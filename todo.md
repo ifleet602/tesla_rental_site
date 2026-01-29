@@ -72,3 +72,12 @@
 ## Errors to Fix (Cline Collaboration)
 - [x] DialogContent missing DialogTitle - accessibility error in mobile menu
 - [x] Missing aria-describedby for DialogContent - accessibility warning
+
+## Crypto Payment Integration
+- [ ] Research Coinbase Commerce API
+- [ ] Research Crypto.com Pay API
+- [ ] Choose best crypto payment provider
+- [ ] Implement crypto checkout option on booking page
+- [ ] Add crypto payment webhook handler
+- [ ] Test crypto payment flow
+- [ ] Update documentation with crypto payment instructions
