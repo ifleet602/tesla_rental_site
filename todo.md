@@ -59,7 +59,16 @@
 - [ ] Push stable Cline version to GitHub
 - [ ] Pull from GitHub to Manus
 - [ ] Verify sync is working
+
+## Domain & Integration
+- [ ] Export code to GitHub (ifleet602/tesla_rental_site)
+- [ ] Set up rent.ifleet602.com subdomain pointing to Manus
+- [ ] Set up development workflow (GitHub <-> Manus <-> Cline)
 - [x] Add loading skeletons for data fetching
 - [x] Improve mobile touch targets (44px+)
 - [x] Add smooth scroll behavior
 - [x] Add micro-interactions on hover states
+
+## Errors to Fix (Cline Collaboration)
+- [x] DialogContent missing DialogTitle - accessibility error in mobile menu
+- [x] Missing aria-describedby for DialogContent - accessibility warning

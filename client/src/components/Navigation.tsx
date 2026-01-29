@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Menu, X, Zap } from "lucide-react";
 import { useState } from "react";
 
@@ -66,6 +66,8 @@ export default function Navigation() {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">Main navigation links for IFLEET602</SheetDescription>
             <nav className="flex flex-col gap-4 mt-8">
               {navLinks.map((link) => (
                 <Link
