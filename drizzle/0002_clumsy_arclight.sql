@@ -1,0 +1,1 @@
+ALTER TABLE `franchiseApplications` MODIFY COLUMN `investmentCapital` text;

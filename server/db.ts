@@ -1,11 +1,16 @@
-import { eq } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, users, 
+  vehicles, Vehicle, InsertVehicle,
+  bookings, Booking, InsertBooking,
+  territories, Territory, InsertTerritory,
+  franchiseApplications, FranchiseApplication, InsertFranchiseApplication
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -17,6 +22,8 @@ export async function getDb() {
   }
   return _db;
 }
+
+// ============ USER QUERIES ============
 
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
@@ -85,8 +92,158 @@ export async function getUserByOpenId(openId: string) {
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ============ VEHICLE QUERIES ============
+
+export async function getVehicles(): Promise<Vehicle[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(vehicles).where(eq(vehicles.available, true));
+  return result;
+}
+
+export async function getVehicleById(id: number): Promise<Vehicle | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(vehicles).where(eq(vehicles.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createVehicle(vehicle: InsertVehicle): Promise<{ id: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(vehicles).values(vehicle);
+  return { id: Number(result[0].insertId) };
+}
+
+// ============ BOOKING QUERIES ============
+
+export async function getBookings(userId?: number): Promise<Booking[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  if (userId) {
+    return await db.select().from(bookings).where(eq(bookings.userId, userId));
+  }
+  return await db.select().from(bookings);
+}
+
+export async function getBookedDates(vehicleId: number): Promise<{ startDate: string; endDate: string }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select({
+    startDate: bookings.startDate,
+    endDate: bookings.endDate,
+  }).from(bookings).where(
+    and(
+      eq(bookings.vehicleId, vehicleId),
+      eq(bookings.status, "confirmed")
+    )
+  );
+  
+  return result.map(r => ({
+    startDate: r.startDate.toISOString().split('T')[0],
+    endDate: r.endDate.toISOString().split('T')[0],
+  }));
+}
+
+export async function createBooking(booking: {
+  vehicleId: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  startDate: string;
+  endDate: string;
+  totalPrice: string;
+  notes?: string;
+  userId?: number;
+}): Promise<{ id: number; success: boolean }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(bookings).values({
+    vehicleId: booking.vehicleId,
+    customerName: booking.customerName,
+    customerEmail: booking.customerEmail,
+    customerPhone: booking.customerPhone,
+    startDate: new Date(booking.startDate),
+    endDate: new Date(booking.endDate),
+    totalPrice: booking.totalPrice,
+    notes: booking.notes,
+    userId: booking.userId,
+    status: "pending",
+  });
+  
+  return { id: Number(result[0].insertId), success: true };
+}
+
+// ============ TERRITORY QUERIES ============
+
+export async function getTerritories(): Promise<Territory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(territories);
+}
+
+export async function getTerritoryById(id: number): Promise<Territory | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(territories).where(eq(territories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAvailableTerritories(): Promise<Territory[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(territories).where(eq(territories.status, "available"));
+}
+
+// ============ FRANCHISE APPLICATION QUERIES ============
+
+export async function createFranchiseApplication(application: {
+  territoryId?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  city?: string;
+  state?: string;
+  investmentCapital?: string;
+  businessExperience?: string;
+  whyInterested?: string;
+}): Promise<{ id: number; success: boolean }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(franchiseApplications).values({
+    territoryId: application.territoryId,
+    firstName: application.firstName,
+    lastName: application.lastName,
+    email: application.email,
+    phone: application.phone,
+    city: application.city,
+    state: application.state,
+    investmentCapital: application.investmentCapital,
+    businessExperience: application.businessExperience,
+    whyInterested: application.whyInterested,
+    status: "new",
+  });
+  
+  return { id: Number(result[0].insertId), success: true };
+}
+
+export async function getFranchiseApplications(): Promise<FranchiseApplication[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(franchiseApplications);
+}
