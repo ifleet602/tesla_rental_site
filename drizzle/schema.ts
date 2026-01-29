@@ -58,6 +58,10 @@ export const bookings = mysqlTable("bookings", {
   totalPrice: decimal("totalPrice", { precision: 10, scale: 2 }).notNull(),
   status: mysqlEnum("status", ["pending", "confirmed", "cancelled", "completed"]).default("pending").notNull(),
   notes: text("notes"),
+  // Stripe payment tracking
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }),
+  paymentStatus: mysqlEnum("paymentStatus", ["unpaid", "pending", "paid", "refunded"]).default("unpaid").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

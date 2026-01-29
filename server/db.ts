@@ -247,3 +247,55 @@ export async function getFranchiseApplications(): Promise<FranchiseApplication[]
   
   return await db.select().from(franchiseApplications);
 }
+
+
+// ============ BOOKING PAYMENT QUERIES ============
+
+export async function getBookingById(id: number): Promise<Booking | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateBookingPayment(
+  bookingId: number,
+  data: {
+    stripeCheckoutSessionId?: string;
+    stripePaymentIntentId?: string;
+    paymentStatus?: "unpaid" | "pending" | "paid" | "refunded";
+    status?: "pending" | "confirmed" | "cancelled" | "completed";
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(bookings).set(data).where(eq(bookings.id, bookingId));
+}
+
+export async function checkVehicleAvailability(
+  vehicleId: number,
+  startDate: Date,
+  endDate: Date
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  
+  // Check for overlapping confirmed bookings
+  const overlapping = await db.select({ id: bookings.id })
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.vehicleId, vehicleId),
+        eq(bookings.status, "confirmed"),
+        // Overlapping date check: existing booking overlaps if:
+        // existing.start <= new.end AND existing.end >= new.start
+        lte(bookings.startDate, endDate),
+        gte(bookings.endDate, startDate)
+      )
+    )
+    .limit(1);
+  
+  return overlapping.length === 0;
+}

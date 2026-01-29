@@ -11,6 +11,7 @@ import FranchiseOpportunities from "./pages/FranchiseOpportunities";
 import FindTerritory from "./pages/FindTerritory";
 import ApplyNow from "./pages/ApplyNow";
 import HowItWorks from "./pages/HowItWorks";
+import BookingSuccess from "./pages/BookingSuccess";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/territory" component={FindTerritory} />
       <Route path="/apply" component={ApplyNow} />
       <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/booking-success" component={BookingSuccess} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

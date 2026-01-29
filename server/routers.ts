@@ -3,7 +3,9 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { getVehicles, getVehicleById, getBookings, createBooking, getTerritories, getTerritoryById, createFranchiseApplication, getBookedDates } from "./db";
+import { getVehicles, getVehicleById, getBookings, createBooking, getTerritories, getTerritoryById, createFranchiseApplication, getBookedDates, getBookingById, updateBookingPayment, checkVehicleAvailability } from "./db";
+import { createCheckoutSession, getCheckoutSession } from "./stripe/stripe";
+import { sendBookingNotificationToOwner, sendFranchiseApplicationNotification } from "./email/email";
 
 export const appRouter = router({
   system: systemRouter,
@@ -54,10 +56,93 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        return await createBooking({
+        const result = await createBooking({
           ...input,
           userId: ctx.user?.id,
         });
+        
+        // Get vehicle details for notification
+        const vehicle = await getVehicleById(input.vehicleId);
+        
+        // Send notification to owner (async, don't block)
+        sendBookingNotificationToOwner({
+          bookingId: result.id,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          vehicleModel: vehicle?.model || "Tesla",
+          startDate: input.startDate,
+          endDate: input.endDate,
+          totalPrice: input.totalPrice,
+        }).catch(err => console.error("Failed to send booking notification:", err));
+        
+        return result;
+      }),
+    
+    checkAvailability: publicProcedure
+      .input(z.object({
+        vehicleId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const isAvailable = await checkVehicleAvailability(
+          input.vehicleId,
+          new Date(input.startDate),
+          new Date(input.endDate)
+        );
+        return { available: isAvailable };
+      }),
+    
+    createCheckout: publicProcedure
+      .input(z.object({
+        bookingId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const booking = await getBookingById(input.bookingId);
+        if (!booking) {
+          throw new Error("Booking not found");
+        }
+        
+        const vehicle = await getVehicleById(booking.vehicleId);
+        if (!vehicle) {
+          throw new Error("Vehicle not found");
+        }
+        
+        const origin = ctx.req.headers.origin || "http://localhost:3000";
+        
+        const { url, sessionId } = await createCheckoutSession({
+          bookingId: booking.id,
+          customerEmail: booking.customerEmail,
+          customerName: booking.customerName,
+          vehicleModel: vehicle.model,
+          startDate: booking.startDate.toISOString().split('T')[0],
+          endDate: booking.endDate.toISOString().split('T')[0],
+          totalAmountCents: Math.round(parseFloat(booking.totalPrice) * 100),
+          depositCents: 25000, // $250 security deposit
+          origin,
+        });
+        
+        // Update booking with checkout session ID
+        await updateBookingPayment(booking.id, {
+          stripeCheckoutSessionId: sessionId,
+          paymentStatus: "pending",
+        });
+        
+        return { checkoutUrl: url, sessionId };
+      }),
+    
+    getPaymentStatus: publicProcedure
+      .input(z.object({ bookingId: z.number() }))
+      .query(async ({ input }) => {
+        const booking = await getBookingById(input.bookingId);
+        if (!booking) {
+          return { status: "not_found" };
+        }
+        return {
+          status: booking.paymentStatus,
+          bookingStatus: booking.status,
+        };
       }),
   }),
 
@@ -90,7 +175,23 @@ export const appRouter = router({
         whyInterested: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        return await createFranchiseApplication(input);
+        const result = await createFranchiseApplication(input);
+        
+        // Send notification to owner (async, don't block)
+        sendFranchiseApplicationNotification({
+          applicationId: result.id,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          email: input.email,
+          phone: input.phone,
+          city: input.city,
+          state: input.state,
+          investmentCapital: input.investmentCapital,
+          businessExperience: input.businessExperience,
+          whyInterested: input.whyInterested,
+        }).catch(err => console.error("Failed to send franchise notification:", err));
+        
+        return result;
       }),
   }),
 });
