@@ -31,3 +31,14 @@
 - [x] Professional typography
 - [x] Mobile-responsive layouts
 - [x] Dual customer journey (rental vs franchise)
+
+## Cline Collaboration Tasks
+- [x] Verify routing works for all navigation links
+- [ ] Create shared Layout component wrapper
+- [ ] Add customer testimonials section
+- [ ] Add partner/trust logos
+- [ ] Enhance FAQ with more questions
+- [ ] Add loading skeletons for data fetching
+- [ ] Improve mobile touch targets (44px+)
+- [ ] Add smooth scroll behavior
+- [ ] Add micro-interactions on hover states
