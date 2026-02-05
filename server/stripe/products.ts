@@ -20,8 +20,8 @@ export const RENTAL_PRODUCTS: Record<string, RentalProduct> = {
     id: "model_3",
     name: "Tesla Model 3 Rental",
     description: "Premium Tesla Model 3 rental - Long Range AWD",
-    dailyPriceCents: 14900, // $149/day
-    weeklyPriceCents: 89900, // $899/week
+    dailyPriceCents: 5000, // $50/day
+    weeklyPriceCents: 30000, // $300/week
     depositCents: 25000, // $250 security deposit
     vehicleModel: "Model 3",
   },
@@ -29,8 +29,8 @@ export const RENTAL_PRODUCTS: Record<string, RentalProduct> = {
     id: "model_y",
     name: "Tesla Model Y Rental",
     description: "Premium Tesla Model Y rental - Long Range AWD",
-    dailyPriceCents: 17900, // $179/day
-    weeklyPriceCents: 109900, // $1,099/week
+    dailyPriceCents: 7000, // $70/day
+    weeklyPriceCents: 40000, // $400/week
     depositCents: 25000, // $250 security deposit
     vehicleModel: "Model Y",
   },

@@ -18,8 +18,8 @@ import { differenceInDays, format } from "date-fns";
 import { useLocation } from "wouter";
 
 const vehicles = [
-  { id: 1, name: "Tesla Model 3 Long Range", dailyRate: 149 },
-  { id: 2, name: "Tesla Model Y Performance", dailyRate: 179 },
+  { id: 1, name: "Tesla Model 3 Long Range", dailyRate: 50 },
+  { id: 2, name: "Tesla Model Y Performance", dailyRate: 70 },
 ];
 
 const SECURITY_DEPOSIT = 250;

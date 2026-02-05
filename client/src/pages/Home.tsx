@@ -19,9 +19,9 @@ const trustBadges = [
 const vehicles = [
   {
     model: "Tesla Model 3",
-    year: 2024,
+    year: 2021,
     image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop",
-    dailyRate: 149,
+    dailyRate: 50,
     range: "333 miles",
     acceleration: "3.1s 0-60",
     features: ["Autopilot", "Premium Audio", "Glass Roof"],
@@ -30,7 +30,7 @@ const vehicles = [
     model: "Tesla Model Y",
     year: 2025,
     image: "https://images.unsplash.com/photo-1619317190096-c5e9b1c8c0d9?w=600&h=400&fit=crop",
-    dailyRate: 179,
+    dailyRate: 70,
     range: "330 miles",
     acceleration: "3.5s 0-60",
     features: ["7 Seats", "Autopilot", "Panoramic Roof"],
@@ -104,7 +104,7 @@ export default function Home() {
                 />
               </div>
               <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-4 rounded-xl shadow-lg">
-                <div className="text-2xl font-bold">From $149/day</div>
+                <div className="text-2xl font-bold">From $50/day</div>
                 <div className="text-sm opacity-90">All-inclusive pricing</div>
               </div>
             </div>
